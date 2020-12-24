@@ -24,11 +24,6 @@ let UserSchema = new Schema({
         required: true,
         default: null
     },
-    status: {
-        type: String,
-        required: true,
-        default: "active"
-    },
     cover_photo: {
         type: String,
         default: null
@@ -60,8 +55,8 @@ let UserSchema = new Schema({
 });
 
 UserSchema.plugin(autoIncrement.plugin, {
-    model: 'User',
+    model: 'Users',
     field: 'id'
 });
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('Users', UserSchema);

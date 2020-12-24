@@ -2,7 +2,7 @@
 
 let jwtHelper = require("../helper/jwtHelper");
 
-const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET || "KEY";
+const accessTokenSecret = process.env.SECRETKEY || "KEY";
 
 exports.isAuth = async (req, res, next) => {
   console.log("zo day");
