@@ -1,6 +1,7 @@
 'use strict';
 let jwtHelper = require("../helper/jwtHelper");
 let User = require("../models/user/userModel");
+let UserProfile = require("../models/user/userProfileModel");
 let bcrypt = require('bcrypt');
 
 const saltRounds = parseInt(process.env.SALT_ROUNDS) || 10;
@@ -44,16 +45,24 @@ exports.signup = (req, res) => {
                             code: 1,
                             message: "OK",
                             accessToken,
-                            refreshToken
+                            refreshToken,
+                            data: data
                         });
+                        let userProfile = new UserProfile({
+                            user_id: data._id,
+                            name: data.name,
+                        })
+                        userProfile.save();
                     }
                 })
+
             })
         }
     })
 }
 
 exports.login = async (req, res) => {
+    console.log("req", req.body)
     try {
         let user = await User.findOne({
             phone: req.body.phone

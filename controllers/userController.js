@@ -1,6 +1,6 @@
 "use strict";
 let User = require("../models/user/userModel");
-
+let UserProfile = require("../models/user/userProfileModel");
 let multer = require('multer');
 let path = require('path');
 let bcrypt = require('bcrypt');
@@ -15,38 +15,6 @@ let storageAvatar = multer.diskStorage({
 });
 let uploadAvatar = multer({ storage: storageAvatar }).single('avatar');
 
-exports.change_info_after_signup = async (req, res) => {
-    try {
-        let user = await User.findOne({
-            id: req.jwtDecoded.data.id,
-        }).exec();
-
-        await uploadAvatar(req, res, async (err) => {
-            if (err) {
-                return res.json({
-                    code: 9999,
-                    message: err
-                });
-            } else {
-                console.log(req.body.name, user)
-                let link = '/data/' + req.file.filename;
-                user.name = req.body.name;
-                user.avatar = link;
-                await user.save();
-                res.json({
-                    code: 1000,
-                    message: "OK",
-                    data: user
-                })
-            }
-        });
-    } catch (err) {
-        res.json({
-            code: 9999,
-            message: err
-        });
-    }
-};
 
 exports.change_password = async (req, res) => {
     let user = await User.findOne({ id: req.jwtDecoded.data.id }).exec();
@@ -69,107 +37,31 @@ exports.change_password = async (req, res) => {
 };
 
 
-exports.set_user_info = async (req, res) => {
-    User.findOne({
-        id: req.jwtDecoded.data.id
-    }).exec(async (err, data) => {
-        if (err)
-            res.json({
-                code: 9999,
-                message: err
-            });
-        else {
-            if (data) {
-                let user = new User(data);
-                user.name = req.data.name;
-                user.address = req.data.address;
-                user.country = req.data.country;
-                user.birthday = req.data.birthday;
-                await user.save(async (err, data) => {
-                    if (err)
-                        res.json({
-                            code: 9999,
-                            message: err
-                        });
-                    else {
-                        res.json({
-                            code: 1000,
-                            message: "OK",
-                            data: data
-                        });
-                    }
-                })
-            }
-        }
-    })
-}
-
-exports.set_avatar = async (req, res) => {
-    let user = await User.findOne({ id: req.jwtDecoded.data.id }).exec();
-
-    await uploadAvatar(req, res, async (err) => {
-        if (err) {
-            return res.json({
-                code: 9999,
-                message: err
-            });
-        } else {
-            let link = '/data/' + req.file.filename;
-            user.avatar = link;
-            await user.save((err, data) => {
-                if (err) {
-                    return res.json({
-                        code: 9999,
-                        message: err
-                    });
-                } else {
-                    res.json({
-                        code: 1000,
-                        message: "OK",
-                        data: data
-                    })
-                }
-            });
-        }
-    });
-}
-
-let storageCover = multer.diskStorage({
-    destination: (req, file, callback) => { callback(null, './data'); },
-    filename: (req, file, callback) => {
-        callback(null, path.parse(file.originalname).name + '-' + Date.now() + path.extname(file.originalname));
-    }
-});
-let uploadCover = multer({ storage: storageCover }).single('cover');
-exports.set_cover = async (req, res) => {
-    let user = await User.findOne({
-        id: req.jwtDecoded.data.id,
-    }).exec();
-
-    await uploadCover(req, res, async (err) => {
-        if (err) {
-            return res.json({
-                code: 9999,
-                message: err
-            });
-        } else {
-            let link = '/data/' + req.file.filename;
-            user.cover_photo = link;
-            await user.save((err, data) => {
-                res.json({
-                    code: 1000,
-                    message: "OK",
-                    data: user
-                })
-            });
-        }
-    });
-}
-
-exports.info_user = (req, res) => {
+exports.set_user_profile = async (req, res) => {
     let user_id = req.body.user_id;
     console.log('user_id', user_id)
-    User.findById((user_id), (err, data) => {
+    UserProfile.findOneAndUpdate({ user_id: user_id }, req.body)
+        .exec(async (err, data) => {
+            if (err)
+                res.json({
+                    code: 9999,
+                    message: err
+                });
+            else {
+                res.json({
+                    code: 1,
+                    message: "OK",
+                    data: data
+                })
+            }
+        })
+}
+exports.info_userProfile = (req, res) => {
+    let user_id = req.body.user_id;
+    console.log('user_id', user_id)
+    UserProfile.findOne({
+        user_id: user_id
+    }).exec(async (err, data) => {
         if (err)
             res.json({
                 code: 9999,
@@ -182,17 +74,13 @@ exports.info_user = (req, res) => {
                     code: 1,
                     message: 'OK',
                     data: {
-                        name: info_user.name,
-                        status: info_user.status,
-                        cover_photo: info_user.cover_photo,
-                        avatar: info_user.avatar,
-                        birthday: info_user.birthday,
+                        user_id: info_user.user_id,
                         address: info_user.address,
-                        city: info_user.city,
-                        country: info_user.country,
-                        phone: info_user.phone,
+                        longtitude: info_user.longtitude,
+                        latitude: info_user.latitude,
+                        description: info_user.description,
+                        payMethods: info_user.payMethods,
                         created_at: info_user.created_at,
-                        id: info_user.id
                     }
                 })
             }
@@ -205,3 +93,98 @@ exports.info_user = (req, res) => {
         }
     })
 }
+
+// exports.change_info_after_signup = async (req, res) => {
+//     try {
+//         let user = await User.findOne({
+//             id: req.jwtDecoded.data.id,
+//         }).exec();
+
+//         await uploadAvatar(req, res, async (err) => {
+//             if (err) {
+//                 return res.json({
+//                     code: 9999,
+//                     message: err
+//                 });
+//             } else {
+//                 console.log(req.body.name, user)
+//                 let link = '/data/' + req.file.filename;
+//                 user.name = req.body.name;
+//                 user.avatar = link;
+//                 await user.save();
+//                 res.json({
+//                     code: 1000,
+//                     message: "OK",
+//                     data: user
+//                 })
+//             }
+//         });
+//     } catch (err) {
+//         res.json({
+//             code: 9999,
+//             message: err
+//         });
+//     }
+// };
+
+// exports.set_avatar = async (req, res) => {
+//     let user = await User.findOne({ id: req.jwtDecoded.data.id }).exec();
+
+//     await uploadAvatar(req, res, async (err) => {
+//         if (err) {
+//             return res.json({
+//                 code: 9999,
+//                 message: err
+//             });
+//         } else {
+//             let link = '/data/' + req.file.filename;
+//             user.avatar = link;
+//             await user.save((err, data) => {
+//                 if (err) {
+//                     return res.json({
+//                         code: 9999,
+//                         message: err
+//                     });
+//                 } else {
+//                     res.json({
+//                         code: 1000,
+//                         message: "OK",
+//                         data: data
+//                     })
+//                 }
+//             });
+//         }
+//     });
+// }
+
+// let storageCover = multer.diskStorage({
+//     destination: (req, file, callback) => { callback(null, './data'); },
+//     filename: (req, file, callback) => {
+//         callback(null, path.parse(file.originalname).name + '-' + Date.now() + path.extname(file.originalname));
+//     }
+// });
+// let uploadCover = multer({ storage: storageCover }).single('cover');
+// exports.set_cover = async (req, res) => {
+//     let user = await User.findOne({
+//         id: req.jwtDecoded.data.id,
+//     }).exec();
+
+//     await uploadCover(req, res, async (err) => {
+//         if (err) {
+//             return res.json({
+//                 code: 9999,
+//                 message: err
+//             });
+//         } else {
+//             let link = '/data/' + req.file.filename;
+//             user.cover_photo = link;
+//             await user.save((err, data) => {
+//                 res.json({
+//                     code: 1000,
+//                     message: "OK",
+//                     data: user
+//                 })
+//             });
+//         }
+//     });
+// }

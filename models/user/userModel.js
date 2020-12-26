@@ -4,10 +4,6 @@ let autoIncrement = require('mongoose-auto-increment');
 let Schema = mongoose.Schema;
 
 let UserSchema = new Schema({
-    id: {
-        type: Number,
-        required: true,
-    },
     name: {
         type: String,
         default: null
@@ -24,39 +20,19 @@ let UserSchema = new Schema({
         required: true,
         default: null
     },
-    cover_photo: {
-        type: String,
-        default: null
-    },
-    avatar: {
-        type: String,
-        default: null
-    },
     created_at: {
         type: Date,
         default: Date.now
     },
-    birthday: {
-        type: Date,
-        default: null
-    },
-    address: {
+    role_name:{
         type: String,
-        default: null
+        default: null,
     },
-    city: {
-        type: String,
-        default: null
-    },
-    country: {
-        type: String,
-        default: null
+    role_id:{
+        type: Number,
+        default: null,
     }
 });
 
-UserSchema.plugin(autoIncrement.plugin, {
-    model: 'Users',
-    field: 'id'
-});
 
 module.exports = mongoose.model('Users', UserSchema);
